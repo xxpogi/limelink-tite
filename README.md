@@ -1,36 +1,137 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LimeLink
 
-## Getting Started
+Free, unlimited file sharing powered by GoFile.io. No size limits, no registration required.
 
-First, run the development server:
+## Features
+
+- **Unlimited File Size** - No restrictions on file sizes
+- **Multi-file Upload** - Upload up to 20 files at once
+- **Password Protection** - Secure your shared files (requires API token)
+- **Link Expiration** - Set auto-delete after 1-90 days (requires API token)
+- **QR Code Sharing** - Easy mobile sharing with QR codes
+- **Dark/Light Mode** - Beautiful interface in any lighting
+- **Security Built-in** - Rate limiting, XSS protection, secure headers
+
+## Quick Start
+
+### 1. Clone and Install
+
+```bash
+git clone <your-repo>
+cd limelink
+npm install
+```
+
+### 2. Configure Environment
+
+Copy the example environment file:
+
+```bash
+cp .env.example .env.local
+```
+
+Edit `.env.local` with your settings:
+
+```env
+# Optional: GoFile API Token (enables password protection & expiration)
+# Get your free token at: https://gofile.io/myProfile
+GOFILE_TOKEN=your_token_here
+GOFILE_ACCOUNT_ID=your_account_id_here
+
+# Rate Limiting
+RATE_LIMIT_REQUESTS=20
+RATE_LIMIT_WINDOW_MS=60000
+
+# Security
+ALLOWED_ORIGINS=http://localhost:3000
+```
+
+### 3. Run Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deploy to Vercel
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### One-Click Deploy
 
-## Learn More
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/your-username/limelink)
 
-To learn more about Next.js, take a look at the following resources:
+### Manual Deploy
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Push to GitHub
+2. Import project on [Vercel](https://vercel.com)
+3. Add environment variables:
+   - `GOFILE_TOKEN` (optional)
+   - `GOFILE_ACCOUNT_ID` (optional)
+   - `ALLOWED_ORIGINS` = `https://your-domain.vercel.app`
+4. Deploy!
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Getting a GoFile API Token (Free)
 
-## Deploy on Vercel
+1. Go to [gofile.io](https://gofile.io)
+2. Create a free account
+3. Navigate to [My Profile](https://gofile.io/myProfile)
+4. Copy your API token
+5. Add to `.env.local` or Vercel environment variables
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**Without a token:** Files upload anonymously and may be auto-deleted after inactivity.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**With a token:** You get password protection, expiration control, and files linked to your account.
+
+## Project Structure
+
+```
+limelink/
+├── src/
+│   ├── app/
+│   │   ├── api/
+│   │   │   ├── server/route.ts    # Get upload server
+│   │   │   └── upload/route.ts    # Handle file uploads
+│   │   ├── globals.css            # Global styles
+│   │   ├── layout.tsx             # Root layout
+│   │   └── page.tsx               # Main upload page
+│   ├── components/
+│   │   ├── ui/                    # UI primitives
+│   │   ├── file-dropzone.tsx      # Drag & drop zone
+│   │   ├── upload-progress.tsx    # Progress indicators
+│   │   ├── upload-options.tsx     # Password/expiration
+│   │   ├── share-link.tsx         # Share results + QR
+│   │   ├── theme-toggle.tsx       # Dark/light switch
+│   │   └── theme-provider.tsx     # Theme context
+│   ├── lib/
+│   │   ├── gofile.ts              # GoFile API client
+│   │   ├── security.ts            # Rate limiting, XSS, etc.
+│   │   └── utils.ts               # Utility functions
+│   └── middleware.ts              # Security headers
+├── .env.example                   # Environment template
+├── .env.local                     # Local environment (git-ignored)
+└── package.json
+```
+
+## Security Features
+
+- **Rate Limiting** - Prevents abuse (configurable requests/window)
+- **XSS Protection** - Input sanitization on all user data
+- **CORS Validation** - Origin checking for API routes
+- **Security Headers** - X-Frame-Options, CSP, etc.
+- **File Validation** - MIME type checking, filename sanitization
+- **No Secrets in Code** - All credentials via environment variables
+
+## Tech Stack
+
+- **Framework**: Next.js 15 (App Router)
+- **Language**: TypeScript (strict mode)
+- **Styling**: Tailwind CSS v4
+- **Components**: Radix UI primitives
+- **Icons**: Lucide React
+- **QR Codes**: qrcode library
+- **Validation**: Zod
+- **Storage**: GoFile.io API
+
+## License
+
+MIT
