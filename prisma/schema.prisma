@@ -1,0 +1,917 @@
+// LimeLink Observability Platform - Database Schema
+// Production-grade schema with indexing, foreign keys, and soft deletes
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// USER & AUTHENTICATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String // bcrypt hashed
+  name          String?
+  avatarUrl     String?
+  timezone      String    @default("UTC")
+  emailVerified DateTime?
+
+  // 2FA (future)
+  twoFactorSecret  String?
+  twoFactorEnabled Boolean @default(false)
+
+  // Timestamps
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // Soft delete
+
+  // Relations
+  sessions    Session[]
+  teamMembers TeamMember[]
+  ownedTeams  Team[]       @relation("TeamOwner")
+  auditLogs   AuditLog[]
+  apiKeys     ApiKey[]
+
+  @@index([email])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  userAgent String?
+  ipAddress String?
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+model ApiKey {
+  id         String    @id @default(cuid())
+  userId     String
+  teamId     String?
+  name       String
+  keyHash    String    @unique // Store hash only
+  keyPrefix  String // First 8 chars for display
+  scopes     String[] // ['read:monitors', 'write:alerts', etc.]
+  lastUsedAt DateTime?
+  expiresAt  DateTime?
+
+  createdAt DateTime  @default(now())
+  deletedAt DateTime? // Soft delete
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team Team? @relation(fields: [teamId], references: [id], onDelete: SetNull)
+
+  @@index([keyHash])
+  @@index([userId])
+  @@index([teamId])
+  @@map("api_keys")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEAM & RBAC
+// ═══════════════════════════════════════════════════════════════════════════════
+
+enum TeamRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+model Team {
+  id      String @id @default(cuid())
+  name    String
+  slug    String @unique
+  ownerId String
+
+  // Branding
+  logoUrl    String?
+  brandColor String  @default("#3B82F6")
+
+  // Settings
+  timezone   String @default("UTC")
+  dateFormat String @default("YYYY-MM-DD")
+
+  // Timestamps
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // Soft delete
+
+  // Relations
+  owner    User         @relation("TeamOwner", fields: [ownerId], references: [id])
+  members  TeamMember[]
+  projects Project[]
+  apiKeys  ApiKey[]
+
+  @@index([slug])
+  @@index([ownerId])
+  @@index([deletedAt])
+  @@map("teams")
+}
+
+model TeamMember {
+  id     String   @id @default(cuid())
+  teamId String
+  userId String
+  role   TeamRole @default(MEMBER)
+
+  // Invites
+  invitedBy       String?
+  inviteEmail     String?
+  inviteToken     String?   @unique
+  inviteExpiresAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@index([teamId])
+  @@index([userId])
+  @@index([inviteToken])
+  @@map("team_members")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PROJECTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model Project {
+  id          String  @id @default(cuid())
+  teamId      String
+  name        String
+  slug        String
+  description String?
+
+  // Public status page
+  isPublic         Boolean @default(false)
+  publicSlug       String? @unique
+  publicBrandColor String? @default("#3B82F6")
+  customDomain     String?
+
+  // Timestamps
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // Soft delete
+
+  // Relations
+  team         Team            @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  monitors     Monitor[]
+  dashboards   Dashboard[]
+  alertConfigs AlertConfig[]
+  sloDefs      SloDefinition[]
+
+  @@unique([teamId, slug])
+  @@index([teamId])
+  @@index([publicSlug])
+  @@index([deletedAt])
+  @@map("projects")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MONITORS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+enum MonitorType {
+  HTTP
+  HTTPS
+  TCP
+  ICMP
+  DNS
+}
+
+enum MonitorMethod {
+  GET
+  POST
+  PUT
+  DELETE
+  PATCH
+  HEAD
+  OPTIONS
+}
+
+enum MonitorStatus {
+  ACTIVE
+  PAUSED
+  ERROR
+}
+
+model Monitor {
+  id        String        @id @default(cuid())
+  projectId String
+  name      String
+  type      MonitorType   @default(HTTPS)
+  url       String // Target URL
+  method    MonitorMethod @default(GET)
+
+  // Check configuration
+  interval Int @default(300) // seconds (min 30)
+  timeout  Int @default(30) // seconds
+  retries  Int @default(2)
+
+  // Request configuration
+  headers Json? // Custom headers
+  body    String? // Request body
+
+  // Assertions
+  expectedStatus  Int? // Expected status code
+  expectedContent String? // String to match in response
+
+  // SSL monitoring
+  checkSsl      Boolean @default(true)
+  sslExpiryDays Int?    @default(30) // Alert if expires in N days
+
+  // Follow redirects
+  followRedirects Boolean @default(true)
+
+  // Regions to check from
+  regions String[] @default(["us-east-1", "eu-west-1", "ap-southeast-1"])
+
+  // Current state
+  status           MonitorStatus @default(ACTIVE)
+  lastCheckedAt    DateTime?
+  lastStatus       String? // up, down, degraded
+  uptimePercentage Float?        @default(100)
+  avgResponseTime  Int?          @default(0) // ms
+
+  // Timestamps
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // Soft delete
+
+  // Relations
+  project       Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  checks        MonitorCheck[]
+  incidents     Incident[]
+  regions2      MonitorRegion[]
+  networkEvents NetworkEvent[]
+
+  @@index([projectId])
+  @@index([status])
+  @@index([deletedAt])
+  @@index([projectId, status])
+  @@map("monitors")
+}
+
+model MonitorRegion {
+  id            String    @id @default(cuid())
+  monitorId     String
+  region        String // us-east-1, eu-west-1, etc.
+  isActive      Boolean   @default(true)
+  lastCheckedAt DateTime?
+  lastStatus    String? // up, down
+  avgLatency    Int?      @default(0) // ms
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  monitor Monitor @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+
+  @@unique([monitorId, region])
+  @@index([monitorId])
+  @@index([region])
+  @@map("monitor_regions")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MONITOR CHECKS (Time-Series Data)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model MonitorCheck {
+  id        String @id @default(cuid())
+  monitorId String
+  region    String // Which region performed the check
+
+  // Timing (all in ms)
+  dnsTime   Int? // DNS resolution time
+  tcpTime   Int? // TCP connection time
+  tlsTime   Int? // TLS handshake time
+  ttfb      Int? // Time to first byte
+  totalTime Int // Total response time
+
+  // Result
+  statusCode Int?
+  status     String // up, down, degraded
+  error      String? // Error message if failed
+
+  // Response details
+  responseSize Int?
+  responseHash String? // For change detection
+
+  // SSL info
+  sslValid     Boolean?
+  sslExpiresAt DateTime?
+  sslIssuer    String?
+
+  // Metadata
+  checkedAt  DateTime @default(now())
+  checkIndex BigInt // Sequence number for ordering (BigInt for timestamp values)
+
+  monitor Monitor @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+
+  // Indexing strategy for time-series queries
+  @@index([monitorId, checkedAt])
+  @@index([monitorId, region, checkedAt])
+  @@index([checkedAt])
+  @@index([status])
+  @@map("monitor_checks")
+}
+
+// Hourly aggregation for fast analytics
+model MonitorCheckHourly {
+  id        String   @id @default(cuid())
+  monitorId String
+  region    String
+  hour      DateTime // Truncated to hour
+
+  // Aggregated metrics
+  totalChecks   Int
+  upCount       Int
+  downCount     Int
+  degradedCount Int
+
+  avgLatency Float
+  minLatency Int
+  maxLatency Int
+  p95Latency Int
+  p99Latency Int
+
+  errorCodes Json? // { "500": 5, "502": 2 }
+
+  @@unique([monitorId, region, hour])
+  @@index([monitorId, hour])
+  @@index([hour])
+  @@map("monitor_checks_hourly")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INCIDENTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+enum IncidentSeverity {
+  CRITICAL
+  MAJOR
+  MINOR
+  WARNING
+}
+
+enum IncidentStatus {
+  OPEN
+  ACKNOWLEDGED
+  RESOLVED
+  AUTO_RESOLVED
+}
+
+enum IncidentClassification {
+  OUTAGE
+  DEGRADATION
+  PACKET_LOSS
+  NETWORK_DEGRADATION
+  POSSIBLE_DDOS
+  SSL_EXPIRY
+  DNS_ISSUE
+  TIMEOUT
+  ERROR_SPIKE
+  UNKNOWN
+}
+
+model Incident {
+  id        String @id @default(cuid())
+  monitorId String
+
+  // Classification
+  severity       IncidentSeverity       @default(CRITICAL)
+  status         IncidentStatus         @default(OPEN)
+  classification IncidentClassification @default(UNKNOWN)
+
+  // Timing
+  startedAt      DateTime  @default(now())
+  acknowledgedAt DateTime?
+  acknowledgedBy String?
+  resolvedAt     DateTime?
+  duration       Int? // Duration in seconds
+
+  // Impact summary
+  affectedRegions String[]
+  errorRate       Float? // During incident
+  avgLatency      Int? // During incident
+
+  // Description
+  title       String
+  description String?
+
+  // Root cause
+  rootCauseId String?
+  rootCause   RCAReport? @relation(fields: [rootCauseId], references: [id])
+
+  // DDoS/Anomaly detection
+  anomalyScore   Float? // 0-100
+  ddosConfidence Float? // 0-100
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  monitor       Monitor          @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+  updates       IncidentUpdate[]
+  networkEvents NetworkEvent[]
+
+  @@index([monitorId])
+  @@index([status])
+  @@index([startedAt])
+  @@index([monitorId, startedAt])
+  @@index([classification])
+  @@map("incidents")
+}
+
+model IncidentUpdate {
+  id         String @id @default(cuid())
+  incidentId String
+
+  status  String // investigating, identified, monitoring, resolved
+  message String
+
+  createdBy String? // User ID or "system"
+  createdAt DateTime @default(now())
+
+  incident Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+
+  @@index([incidentId])
+  @@index([createdAt])
+  @@map("incident_updates")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ANOMALY DETECTION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model AnomalyScore {
+  id        String @id @default(cuid())
+  monitorId String
+
+  // Score breakdown
+  overallScore Float // 0-100 composite score
+  latencyScore Float? // Anomaly in latency
+  errorScore   Float? // Anomaly in error rate
+  trafficScore Float? // Anomaly in traffic pattern
+
+  // Features that triggered
+  features Json? // { "p99_spike": true, "error_rate": 0.05 }
+
+  // Detection metadata
+  algorithm   String   @default("zscore") // zscore, isolation_forest, etc.
+  windowStart DateTime
+  windowEnd   DateTime
+
+  // Result
+  isAnomaly Boolean @default(false)
+  severity  String? // low, medium, high
+
+  createdAt DateTime @default(now())
+
+  @@index([monitorId])
+  @@index([createdAt])
+  @@index([monitorId, createdAt])
+  @@index([isAnomaly])
+  @@map("anomaly_scores")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NETWORK EVENTS (DDoS, Packet Loss, etc.)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+enum NetworkEventType {
+  LATENCY_SPIKE
+  PACKET_LOSS
+  DDOS_SUSPECTED
+  REGION_FAILURE
+  SSL_ISSUE
+  DNS_FAILURE
+  TIMEOUT_SPIKE
+  ERROR_FLOOD
+}
+
+model NetworkEvent {
+  id         String  @id @default(cuid())
+  monitorId  String
+  incidentId String?
+
+  eventType NetworkEventType
+  severity  IncidentSeverity @default(WARNING)
+
+  // Details
+  description String
+  region      String? // Specific region or null for global
+  confidence  Float // 0-100
+
+  // Metrics at time of detection
+  latency      Int? // ms
+  errorRate    Float?
+  requestCount Int?
+
+  // Evidence
+  evidence Json? // Supporting metrics/data
+
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
+
+  monitor  Monitor   @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+  incident Incident? @relation(fields: [incidentId], references: [id], onDelete: SetNull)
+
+  @@index([monitorId])
+  @@index([eventType])
+  @@index([startedAt])
+  @@index([monitorId, startedAt])
+  @@map("network_events")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// AI ROOT CAUSE ANALYSIS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model RCAReport {
+  id String @id @default(cuid())
+
+  // AI-generated analysis
+  summary    String // Human-readable summary
+  rootCause  String // Identified root cause
+  category   String // Classification
+  confidence Float // 0-100
+
+  // Supporting evidence
+  evidence  Json // Key metrics and observations
+  reasoning String // Step-by-step reasoning
+
+  // Recommendations
+  recommendations String[] // Suggested actions
+
+  // Source data summary
+  dataWindowStart DateTime
+  dataWindowEnd   DateTime
+  regionSummary   Json // Per-region data summary
+
+  // LLM metadata
+  modelVersion     String @default("gpt-4o-mini")
+  promptTokens     Int?
+  completionTokens Int?
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  incidents Incident[]
+
+  @@index([createdAt])
+  @@index([confidence])
+  @@map("rca_reports")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ALERTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+enum AlertChannelType {
+  WEBHOOK
+  DISCORD
+  SLACK
+  EMAIL
+}
+
+enum AlertEventType {
+  MONITOR_DOWN
+  MONITOR_UP
+  MONITOR_DEGRADED
+  INCIDENT_CREATED
+  INCIDENT_RESOLVED
+  ANOMALY_DETECTED
+  DDOS_SUSPECTED
+  SLO_BREACH
+  ERROR_BUDGET_BURN
+  SSL_EXPIRING
+}
+
+model AlertConfig {
+  id        String @id @default(cuid())
+  projectId String
+
+  name        String
+  channelType AlertChannelType
+  isActive    Boolean          @default(true)
+
+  // Channel-specific config
+  webhookUrl        String?
+  webhookSecret     String? // For signing
+  slackWebhookUrl   String?
+  discordWebhookUrl String?
+  emailAddresses    String[]
+
+  // Event subscriptions
+  events AlertEventType[]
+
+  // Filters
+  monitorIds     String[] // Empty = all monitors
+  severityFilter IncidentSeverity[] // Empty = all
+
+  // Rate limiting
+  cooldownMinutes Int @default(5)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  project Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  history AlertHistory[]
+
+  @@index([projectId])
+  @@index([deletedAt])
+  @@map("alert_configs")
+}
+
+model AlertHistory {
+  id            String @id @default(cuid())
+  alertConfigId String
+
+  // What triggered it
+  eventType  AlertEventType
+  monitorId  String?
+  incidentId String?
+
+  // Delivery info
+  status         String // pending, sent, failed, retrying
+  payload        Json // The actual payload sent
+  responseStatus Int? // HTTP status
+  responseBody   String?
+  errorMessage   String?
+
+  // Retry tracking
+  attemptCount Int       @default(1)
+  nextRetryAt  DateTime?
+
+  createdAt DateTime  @default(now())
+  sentAt    DateTime?
+
+  alertConfig AlertConfig @relation(fields: [alertConfigId], references: [id], onDelete: Cascade)
+
+  @@index([alertConfigId])
+  @@index([createdAt])
+  @@index([status])
+  @@map("alert_history")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SLO / SLA TRACKING
+// ═══════════════════════════════════════════════════════════════════════════════
+
+enum SloMetric {
+  AVAILABILITY
+  LATENCY_P95
+  LATENCY_P99
+  ERROR_RATE
+}
+
+enum SloWindow {
+  SEVEN_DAYS
+  THIRTY_DAYS
+  NINETY_DAYS
+}
+
+model SloDefinition {
+  id        String  @id @default(cuid())
+  projectId String
+  monitorId String? // Optional: null = aggregate across all monitors
+
+  name        String
+  description String?
+
+  // What we're measuring
+  metric    SloMetric
+  operator  String    @default("lt") // lt, gt, lte, gte
+  threshold Float // Target value (e.g., 99.9 for availability)
+
+  // Time window
+  window SloWindow @default(THIRTY_DAYS)
+
+  // Alerting
+  burnRateAlert Float? // Alert when error budget burns at this rate
+  fastBurnAlert Boolean @default(true) // Alert on fast burn (2% in 1 hour)
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  project Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  windows SloWindowData[]
+
+  @@index([projectId])
+  @@index([monitorId])
+  @@index([deletedAt])
+  @@map("slo_definitions")
+}
+
+model SloWindowData {
+  id    String @id @default(cuid())
+  sloId String
+
+  // Window boundaries
+  windowStart DateTime
+  windowEnd   DateTime
+
+  // Calculated values
+  actualValue Float // Actual performance (e.g., 99.95)
+  targetValue Float // Target (from slo definition)
+
+  // Error budget
+  errorBudgetTotal     Float // Total budget (e.g., 0.1% downtime)
+  errorBudgetUsed      Float // How much used
+  errorBudgetRemaining Float // How much left
+  burnRate             Float // Current burn rate
+
+  // Status
+  isBreached Boolean   @default(false)
+  breachedAt DateTime?
+
+  // Details
+  totalChecks Int
+  goodChecks  Int
+  badChecks   Int
+
+  updatedAt DateTime @updatedAt
+
+  slo SloDefinition @relation(fields: [sloId], references: [id], onDelete: Cascade)
+
+  @@unique([sloId, windowStart])
+  @@index([sloId])
+  @@index([windowStart])
+  @@index([isBreached])
+  @@map("slo_window_data")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DASHBOARDS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+enum PanelType {
+  TIME_SERIES
+  BAR_CHART
+  PIE_CHART
+  STAT
+  GAUGE
+  HEATMAP
+  LOG_STREAM
+  TABLE
+  MARKDOWN
+}
+
+model Dashboard {
+  id        String @id @default(cuid())
+  projectId String
+
+  name        String
+  description String?
+
+  // Layout
+  layout Json // { panels: [{ id, x, y, w, h }] }
+
+  // Time settings
+  defaultTimeRange String @default("24h") // 15m, 1h, 24h, 7d, 30d
+  refreshInterval  Int? // Auto-refresh in seconds
+
+  // Sharing
+  isPublic   Boolean @default(false)
+  publicSlug String? @unique
+
+  // Preset dashboards can't be deleted
+  isPreset   Boolean @default(false)
+  presetType String? // uptime, network, incidents
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  project Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  panels  DashboardPanel[]
+
+  @@index([projectId])
+  @@index([publicSlug])
+  @@index([deletedAt])
+  @@map("dashboards")
+}
+
+model DashboardPanel {
+  id          String @id @default(cuid())
+  dashboardId String
+
+  title     String
+  panelType PanelType
+
+  // Data source
+  monitorId   String? // Specific monitor or null for aggregate
+  metric      String // latency, uptime, errors, etc.
+  aggregation String  @default("avg") // avg, sum, count, p95, p99
+
+  // Query config
+  query Json? // { filters, groupBy, etc. }
+
+  // Visualization config
+  config Json? // { colors, thresholds, legend, etc. }
+
+  // Layout (overrides dashboard layout if set)
+  positionX Int @default(0)
+  positionY Int @default(0)
+  width     Int @default(6)
+  height    Int @default(4)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  dashboard Dashboard @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+
+  @@index([dashboardId])
+  @@map("dashboard_panels")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// AUDIT LOGGING
+// ═══════════════════════════════════════════════════════════════════════════════
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  INVITE
+  JOIN
+  LEAVE
+  EXPORT
+  ALERT_SENT
+}
+
+model AuditLog {
+  id String @id @default(cuid())
+
+  // Who
+  userId    String?
+  userEmail String?
+
+  // What
+  action     AuditAction
+  resource   String // table name or resource type
+  resourceId String? // specific record ID
+
+  // Details
+  oldValues Json? // Before state
+  newValues Json? // After state
+  metadata  Json? // IP, user agent, etc.
+
+  // Scope
+  teamId    String?
+  projectId String?
+
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([teamId])
+  @@index([createdAt])
+  @@index([action])
+  @@index([resource])
+  @@map("audit_logs")
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SYSTEM CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model SystemConfig {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+
+  description String?
+  updatedAt   DateTime @updatedAt
+  updatedBy   String?
+
+  @@map("system_config")
+}

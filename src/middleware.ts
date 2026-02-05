@@ -1,40 +1,56 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+import { verifyToken } from '@/lib/auth'
 
-export function middleware(request: NextRequest) {
-  const response = NextResponse.next();
+// Public routes that don't require authentication
+const publicRoutes = [
+  '/auth/login',
+  '/auth/register',
+  '/login',
+  '/register',
+  '/api/auth/login',
+  '/api/auth/register',
+  '/api/health',
+]
 
-  // Security Headers
-  response.headers.set("X-Content-Type-Options", "nosniff");
-  response.headers.set("X-Frame-Options", "DENY");
-  response.headers.set("X-XSS-Protection", "1; mode=block");
-  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-  response.headers.set(
-    "Permissions-Policy",
-    "camera=(), microphone=(), geolocation=()"
-  );
-
-  // CSP for production
-  if (process.env.NODE_ENV === "production") {
-    response.headers.set(
-      "Content-Security-Policy",
-      "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://api.gofile.io https://*.gofile.io;"
-    );
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
+  
+  // Allow public routes
+  if (publicRoutes.some(route => pathname.startsWith(route))) {
+    return NextResponse.next()
   }
-
-  return response;
+  
+  // Allow static files and API routes
+  if (pathname.startsWith('/_next') || pathname.startsWith('/static') || pathname.startsWith('/favicon')) {
+    return NextResponse.next()
+  }
+  
+  // Check for session token
+  const token = request.cookies.get('session')?.value
+  
+  if (!token) {
+    // Redirect to login if no token
+    const loginUrl = new URL('/auth/login', request.url)
+    return NextResponse.redirect(loginUrl)
+  }
+  
+  // Verify token is valid
+  const session = await verifyToken(token)
+  
+  if (!session) {
+    // Token is invalid, redirect to login
+    const response = NextResponse.redirect(new URL('/auth/login', request.url))
+    response.cookies.delete('session')
+    return response
+  }
+  
+  // User is authenticated, allow access
+  return NextResponse.next()
 }
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except:
-     * - api/upload (handle independently to avoid body size limits)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder
-     */
-    "/((?!api/upload|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
-};
+}
