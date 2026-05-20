@@ -3,157 +3,235 @@
 #  LimeLink Skript Library — github.com/xxpogi/limelink-tite
 # ================================================================
 #
-#  When a player consumes food/potions, throws a splash or lingering
-#  potion, or breaks a tool from durability, this script instantly
-#  moves a matching item from their deeper inventory into their hand.
-#
-#  Eliminates hotbar micro-management during large builds or streams
-#  with zero combat or resource advantage.
+#  Per-player GUI toggle for automatic hotbar restocking, plus a
+#  manual main-inventory sorter that never touches the hotbar.
 #
 #  Author  : LimeLink
-#  Version : 1.0.0
-#  Requires: Skript 2.7+, skript-reflect 2.4+, Paper 1.20+
+#  Version : 1.1.0
+#  Requires: Skript 2.7+, skript-reflect 2.4+, skript-gui, Paper 1.20+
 # ================================================================
 
 import:
-    org.bukkit.inventory.PlayerInventory
+    org.bukkit.entity.Player
+    org.bukkit.entity.ThrownPotion
+    org.bukkit.event.block.BlockPlaceEvent
+    org.bukkit.event.entity.ProjectileLaunchEvent
+    org.bukkit.event.player.PlayerItemBreakEvent
+    org.bukkit.event.player.PlayerItemConsumeEvent
+    org.bukkit.inventory.EquipmentSlot
+    org.bukkit.inventory.meta.Damageable
+
 
 # ================================================================
 # CONFIGURATION
 # Edit these values, then run: /skript reload smart-inventory-restock
 # ================================================================
 options:
-    # true  → match item type AND metadata (enchants, potion type, custom name…)
-    # false → match material type only (recommended for tools)
-    strict-match: false
-
-    # Show an action bar message when a slot is restocked
+    gui-title: &8Smart Inventory
+    permission: limelink.smartinventory
     notify-restock: true
 
-    # Also search other hotbar slots (0-8) as a secondary fallback
-    # Main inventory (slots 9-35) is always searched first
-    search-hotbar: true
+
+# ================================================================
+# STATE
+# Auto-restock defaults to enabled. Players can toggle it in the GUI.
+# ================================================================
+function smart_inventory_enabled(p: player) :: boolean:
+    if {limelink.smart_inventory.enabled::%uuid of {_p}%} is false:
+        return false
+    return true
 
 
 # ================================================================
-# FUNCTION: restock_slot
-#
-#   p      - the player whose inventory to scan
-#   hotbar - the hotbar slot index (0-8) to refill
-#   ref    - the item that was consumed/broken (used for matching)
-#
-# Search order:
-#   Pass 1 — main inventory slots 9-35 (closest to hotbar first)
-#   Pass 2 — other hotbar slots 0-8 (if search-hotbar is true)
+# ITEM HELPERS
 # ================================================================
-function restock_slot(p: player, hotbar: number, ref: item):
-    set {_inv} to {_p}'s inventory
-    set {_arr} to {_inv}.getStorageContents()
-    set {_len} to {_arr}.length  # 36 for a standard survival player
+function smart_inventory_is_empty(i: object) :: boolean:
+    if {_i} is not set:
+        return true
+    if {_i} is null:
+        return true
+    if {_i}.getType().isAir() is true:
+        return true
+    if {_i}.getAmount() <= 0:
+        return true
+    return false
 
-    # ------------------------------------------------------------------
-    # Pass 1: Main inventory — slots 9 through 35
-    # loop-number starts at 1, so offset by 8 to land on slot 9 first
-    # ------------------------------------------------------------------
-    loop ({_len} - 9) times:
-        set {_i} to loop-number + 8
-        set {_stack} to {_arr}[{_i}]
+function smart_inventory_comparable_copy(i: object) :: object:
+    set {_copy} to {_i}.clone()
+    if {_copy}.hasItemMeta() is true:
+        set {_meta} to {_copy}.getItemMeta()
+        if {_meta} is an instance of Damageable:
+            {_meta}.setDamage(0)
+            {_copy}.setItemMeta({_meta})
+    return {_copy}
 
-        if {_stack} is not null:
-            set {_match} to false
+function smart_inventory_matches(candidate: object, reference: object) :: boolean:
+    if smart_inventory_is_empty({_candidate}) is true:
+        return false
+    if smart_inventory_is_empty({_reference}) is true:
+        return false
+    if {_candidate}.getType() is not {_reference}.getType():
+        return false
 
-            if {@strict-match} is true:
-                # isSimilar checks type + all metadata, ignores stack size
-                if {_stack}.isSimilar({_ref}) is true:
-                    set {_match} to true
-            else:
-                # Loose match — material type only
-                if {_stack}.getType() is {_ref}.getType():
-                    set {_match} to true
+    set {_candidateCopy} to smart_inventory_comparable_copy({_candidate})
+    set {_referenceCopy} to smart_inventory_comparable_copy({_reference})
+    if {_candidateCopy}.isSimilar({_referenceCopy}) is true:
+        return true
+    return false
 
-            if {_match} is true:
-                # Atomically move item: write to hotbar, clear source slot
-                {_inv}.setItem({_hotbar}, {_stack})
-                {_inv}.setItem({_i}, null)
+function smart_inventory_sort_key(i: object) :: text:
+    return "%{_i}.getType().name()%"
 
-                if {@notify-restock} is true:
-                    send action bar "&7[&6Restock&7] &f%type of {_ref}% &7moved to hand." to {_p}
-                stop
-
-    # ------------------------------------------------------------------
-    # Pass 2 (optional): Other hotbar slots — 0 through 8
-    # Only runs if Pass 1 found nothing and search-hotbar is enabled
-    # ------------------------------------------------------------------
-    if {@search-hotbar} is true:
-        loop 9 times:
-            set {_i} to loop-number - 1
-
-            # Skip the target slot — it's either empty or already restocked
-            if {_i} is not {_hotbar}:
-                set {_stack} to {_arr}[{_i}]
-
-                if {_stack} is not null:
-                    set {_match} to false
-
-                    if {@strict-match} is true:
-                        if {_stack}.isSimilar({_ref}) is true:
-                            set {_match} to true
-                    else:
-                        if {_stack}.getType() is {_ref}.getType():
-                            set {_match} to true
-
-                    if {_match} is true:
-                        {_inv}.setItem({_hotbar}, {_stack})
-                        {_inv}.setItem({_i}, null)
-
-                        if {@notify-restock} is true:
-                            send action bar "&7[&6Restock&7] &f%type of {_ref}% &7moved to hand." to {_p}
-                        stop
+function smart_inventory_pad(n: number) :: text:
+    if {_n} < 10:
+        return "00%{_n}%"
+    if {_n} < 100:
+        return "0%{_n}%"
+    return "%{_n}%"
 
 
 # ================================================================
-# EVENT: Food or drinkable potion consumed
-# Fires when a player finishes eating food or drinking a potion.
+# RESTOCK
+# Reads Bukkit's PlayerInventory.getStorageContents() array directly.
+# Searches only deeper inventory slots 9-35, never other hotbar slots.
 # ================================================================
-on consume:
-    set {_ref}  to event-item
-    set {_slot} to player's held item slot
+function smart_inventory_restock(p: player, reference: object):
+    if smart_inventory_enabled({_p}) is false:
+        stop
+    if smart_inventory_is_empty({_reference}) is true:
+        stop
 
-    # Wait 1 tick for the server to remove the consumed item
+    set {_inv} to {_p}.getInventory()
+    set {_contents} to {_inv}.getStorageContents()
+    set {_handSlot} to {_inv}.getHeldItemSlot()
+    set {_handItem} to {_contents}[{_handSlot}]
+
+    if smart_inventory_is_empty({_handItem}) is false:
+        if smart_inventory_matches({_handItem}, {_reference}) is true:
+            stop
+
+    loop 27 times:
+        set {_slot} to loop-number + 8
+        set {_candidate} to {_contents}[{_slot}]
+        if smart_inventory_matches({_candidate}, {_reference}) is true:
+            set {_sourceSlot} to {_slot}
+            stop loop
+
+    if {_sourceSlot} is not set:
+        stop
+
+    set {_replacement} to {_contents}[{_sourceSlot}]
+    if {_handItem} is not set:
+        set {_handItem} to null
+
+    set {_contents}[{_sourceSlot}] to {_handItem}
+    set {_contents}[{_handSlot}] to {_replacement}
+    {_inv}.setStorageContents({_contents})
+    {_p}.updateInventory()
+
+    if {@notify-restock} is true:
+        send action bar "&7[&6Restock&7] &f%{_replacement}.getType().name()% &7moved to your hand." to {_p}
+
+
+# ================================================================
+# SORTING
+# Sorts inventory slots 9-35 once. Hotbar slots 0-8 are untouched.
+# ================================================================
+function smart_inventory_sort_main(p: player):
+    set {_inv} to {_p}.getInventory()
+    set {_contents} to {_inv}.getStorageContents()
+    clear {_sortKeys::*}
+    clear {_itemByKey::*}
+    set {_count} to 0
+
+    loop 27 times:
+        set {_slot} to loop-number + 8
+        set {_item} to {_contents}[{_slot}]
+        if smart_inventory_is_empty({_item}) is false:
+            add 1 to {_count}
+            set {_key} to "%smart_inventory_sort_key({_item})%_%smart_inventory_pad({_count})%"
+            add {_key} to {_sortKeys::*}
+            set {_itemByKey::%{_key}%} to {_item}
+        set {_contents}[{_slot}] to null
+
+    set {_sortKeys::*} to alphabetically sorted {_sortKeys::*}
+
+    set {_writeSlot} to 9
+    loop {_sortKeys::*}:
+        set {_contents}[{_writeSlot}] to {_itemByKey::%loop-value%}
+        add 1 to {_writeSlot}
+
+    {_inv}.setStorageContents({_contents})
+    {_p}.updateInventory()
+
+
+# ================================================================
+# GUI
+# ================================================================
+function smart_inventory_open_gui(p: player):
+    create a gui with virtual chest inventory with 3 rows named "{@gui-title}" and shape "xxxxxxxxx", "x--a-s--x", and "xxxxxxxxx":
+        make gui slot "x" with gray stained glass pane named " "
+
+        if smart_inventory_enabled({_p}) is true:
+            make gui slot "a" with lime dye named "&aAuto Restock: Enabled" with lore "&7Click to disable automatic hotbar refills." and "&8Searches inventory slots 9-35 only.":
+                set {limelink.smart_inventory.enabled::%uuid of player%} to false
+                send "&cAuto inventory restock disabled." to player
+                smart_inventory_open_gui(player)
+        else:
+            make gui slot "a" with red dye named "&cAuto Restock: Disabled" with lore "&7Click to enable automatic hotbar refills." and "&8Searches inventory slots 9-35 only.":
+                set {limelink.smart_inventory.enabled::%uuid of player%} to true
+                send "&aAuto inventory restock enabled." to player
+                smart_inventory_open_gui(player)
+
+        make gui slot "s" with hopper named "&bSort Main Inventory" with lore "&7Sorts slots 9-35 one time." and "&7Hotbar slots 0-8 stay untouched.":
+            smart_inventory_sort_main(player)
+            send "&bSorted your main inventory. Hotbar untouched." to player
+            close player's inventory
+
+    open the last gui for {_p}
+
+
+# ================================================================
+# COMMAND
+# ================================================================
+command /smartinventory:
+    aliases: /smartinv, /autorestock, /invsort
+    permission: {@permission}
+    permission message: &cYou do not have permission to use Smart Inventory.
+    trigger:
+        smart_inventory_open_gui(player)
+
+
+# ================================================================
+# EVENTS
+# ================================================================
+on PlayerItemConsumeEvent:
+    set {_p} to event.getPlayer()
+    set {_reference} to event.getItem()
     wait 1 tick
+    smart_inventory_restock({_p}, {_reference})
 
-    # Only restock if the slot is now completely empty
-    if player's tool is air:
-        restock_slot(player, {_slot}, {_ref})
-
-
-# ================================================================
-# EVENT: Held item breaks from durability
-# Fires when a tool or item reaches 0 durability while in use.
-# ================================================================
-on item break:
-    set {_ref}  to event-item
-    set {_slot} to player's held item slot
-
+on ProjectileLaunchEvent:
+    set {_projectile} to event.getEntity()
+    if {_projectile} is not an instance of ThrownPotion:
+        stop
+    set {_shooter} to {_projectile}.getShooter()
+    if {_shooter} is not an instance of Player:
+        stop
+    set {_reference} to {_projectile}.getItem()
     wait 1 tick
+    smart_inventory_restock({_shooter}, {_reference})
 
-    if player's tool is air:
-        restock_slot(player, {_slot}, {_ref})
+on PlayerItemBreakEvent:
+    set {_p} to event.getPlayer()
+    set {_reference} to event.getBrokenItem()
+    wait 1 tick
+    smart_inventory_restock({_p}, {_reference})
 
-
-# ================================================================
-# EVENT: Splash or lingering potion thrown
-# Fires when any projectile is launched by a player.
-# Filtered to ThrownPotion entities (splash + lingering potions).
-# ================================================================
-on throw:
-    if projectile is a splash potion or projectile is a lingering potion:
-        if shooter is a player:
-            set {_ref}  to shooter's tool
-            set {_slot} to shooter's held item slot
-
-            wait 1 tick
-
-            # Only restock if the last potion in the stack was thrown
-            if shooter's tool is air:
-                restock_slot(shooter, {_slot}, {_ref})
+on BlockPlaceEvent:
+    if event.getHand() is not EquipmentSlot.HAND:
+        stop
+    set {_p} to event.getPlayer()
+    set {_reference} to event.getItemInHand()
+    wait 1 tick
+    smart_inventory_restock({_p}, {_reference})

@@ -8,7 +8,7 @@ A curated collection of production-quality [Skript](https://github.com/SkriptLan
 
 | Folder | Description | Addon Required |
 |--------|-------------|----------------|
-| [`smart-inventory-restock`](./smart-inventory-restock/) | Auto-restocks the active hotbar slot when items are consumed, broken, or thrown | skript-reflect |
+| [`smart-inventory-restock`](./smart-inventory-restock/) | Auto-restocks the active hotbar slot, adds a per-player toggle GUI, and sorts the main inventory on button click | skript-reflect, skript-gui |
 
 ---
 
@@ -16,7 +16,7 @@ A curated collection of production-quality [Skript](https://github.com/SkriptLan
 
 1. **Install [Paper](https://papermc.io/)** (1.20.1 or newer recommended).
 2. **Install [Skript](https://github.com/SkriptLang/Skript/releases)** — drop `Skript.jar` into your `plugins/` folder.
-3. **Install any addons** listed in the project's Requirements table (e.g. `skript-reflect.jar`).
+3. **Install any addons** listed in the project's Requirements table (e.g. `skript-reflect.jar`, `skript-gui.jar`).
 4. **Start or restart** your server once so Skript generates its folder structure.
 5. **Copy the `.sk` file** from the project folder into:
    ```
