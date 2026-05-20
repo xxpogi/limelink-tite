@@ -1,0 +1,159 @@
+# ================================================================
+#  Smart Inventory Restock & Auto-Sorting
+#  LimeLink Skript Library — github.com/xxpogi/limelink-tite
+# ================================================================
+#
+#  When a player consumes food/potions, throws a splash or lingering
+#  potion, or breaks a tool from durability, this script instantly
+#  moves a matching item from their deeper inventory into their hand.
+#
+#  Eliminates hotbar micro-management during large builds or streams
+#  with zero combat or resource advantage.
+#
+#  Author  : LimeLink
+#  Version : 1.0.0
+#  Requires: Skript 2.7+, skript-reflect 2.4+, Paper 1.20+
+# ================================================================
+
+import:
+    org.bukkit.inventory.PlayerInventory
+
+# ================================================================
+# CONFIGURATION
+# Edit these values, then run: /skript reload smart-inventory-restock
+# ================================================================
+options:
+    # true  → match item type AND metadata (enchants, potion type, custom name…)
+    # false → match material type only (recommended for tools)
+    strict-match: false
+
+    # Show an action bar message when a slot is restocked
+    notify-restock: true
+
+    # Also search other hotbar slots (0-8) as a secondary fallback
+    # Main inventory (slots 9-35) is always searched first
+    search-hotbar: true
+
+
+# ================================================================
+# FUNCTION: restock_slot
+#
+#   p      - the player whose inventory to scan
+#   hotbar - the hotbar slot index (0-8) to refill
+#   ref    - the item that was consumed/broken (used for matching)
+#
+# Search order:
+#   Pass 1 — main inventory slots 9-35 (closest to hotbar first)
+#   Pass 2 — other hotbar slots 0-8 (if search-hotbar is true)
+# ================================================================
+function restock_slot(p: player, hotbar: number, ref: item):
+    set {_inv} to {_p}'s inventory
+    set {_arr} to {_inv}.getStorageContents()
+    set {_len} to {_arr}.length  # 36 for a standard survival player
+
+    # ------------------------------------------------------------------
+    # Pass 1: Main inventory — slots 9 through 35
+    # loop-number starts at 1, so offset by 8 to land on slot 9 first
+    # ------------------------------------------------------------------
+    loop ({_len} - 9) times:
+        set {_i} to loop-number + 8
+        set {_stack} to {_arr}[{_i}]
+
+        if {_stack} is not null:
+            set {_match} to false
+
+            if {@strict-match} is true:
+                # isSimilar checks type + all metadata, ignores stack size
+                if {_stack}.isSimilar({_ref}) is true:
+                    set {_match} to true
+            else:
+                # Loose match — material type only
+                if {_stack}.getType() is {_ref}.getType():
+                    set {_match} to true
+
+            if {_match} is true:
+                # Atomically move item: write to hotbar, clear source slot
+                {_inv}.setItem({_hotbar}, {_stack})
+                {_inv}.setItem({_i}, null)
+
+                if {@notify-restock} is true:
+                    send action bar "&7[&6Restock&7] &f%type of {_ref}% &7moved to hand." to {_p}
+                stop
+
+    # ------------------------------------------------------------------
+    # Pass 2 (optional): Other hotbar slots — 0 through 8
+    # Only runs if Pass 1 found nothing and search-hotbar is enabled
+    # ------------------------------------------------------------------
+    if {@search-hotbar} is true:
+        loop 9 times:
+            set {_i} to loop-number - 1
+
+            # Skip the target slot — it's either empty or already restocked
+            if {_i} is not {_hotbar}:
+                set {_stack} to {_arr}[{_i}]
+
+                if {_stack} is not null:
+                    set {_match} to false
+
+                    if {@strict-match} is true:
+                        if {_stack}.isSimilar({_ref}) is true:
+                            set {_match} to true
+                    else:
+                        if {_stack}.getType() is {_ref}.getType():
+                            set {_match} to true
+
+                    if {_match} is true:
+                        {_inv}.setItem({_hotbar}, {_stack})
+                        {_inv}.setItem({_i}, null)
+
+                        if {@notify-restock} is true:
+                            send action bar "&7[&6Restock&7] &f%type of {_ref}% &7moved to hand." to {_p}
+                        stop
+
+
+# ================================================================
+# EVENT: Food or drinkable potion consumed
+# Fires when a player finishes eating food or drinking a potion.
+# ================================================================
+on consume:
+    set {_ref}  to event-item
+    set {_slot} to player's held item slot
+
+    # Wait 1 tick for the server to remove the consumed item
+    wait 1 tick
+
+    # Only restock if the slot is now completely empty
+    if player's tool is air:
+        restock_slot(player, {_slot}, {_ref})
+
+
+# ================================================================
+# EVENT: Held item breaks from durability
+# Fires when a tool or item reaches 0 durability while in use.
+# ================================================================
+on item break:
+    set {_ref}  to event-item
+    set {_slot} to player's held item slot
+
+    wait 1 tick
+
+    if player's tool is air:
+        restock_slot(player, {_slot}, {_ref})
+
+
+# ================================================================
+# EVENT: Splash or lingering potion thrown
+# Fires when any projectile is launched by a player.
+# Filtered to ThrownPotion entities (splash + lingering potions).
+# ================================================================
+on throw:
+    if projectile is a splash potion or projectile is a lingering potion:
+        if shooter is a player:
+            set {_ref}  to shooter's tool
+            set {_slot} to shooter's held item slot
+
+            wait 1 tick
+
+            # Only restock if the last potion in the stack was thrown
+            if shooter's tool is air:
+                restock_slot(shooter, {_slot}, {_ref})
