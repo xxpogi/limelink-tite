@@ -7,7 +7,7 @@
 #  manual main-inventory sorter that never touches the hotbar.
 #
 #  Author  : LimeLink
-#  Version : 1.1.0
+#  Version : 1.2.0
 #  Requires: Skript 2.7+, skript-reflect 2.4+, skript-gui, Paper 1.20+
 # ================================================================
 
@@ -30,6 +30,7 @@ options:
     gui-title: &8Smart Inventory
     permission: limelink.smartinventory
     notify-restock: true
+    folia-mode: true
 
 
 # ================================================================
@@ -96,6 +97,7 @@ function smart_inventory_pad(n: number) :: text:
 # Searches only deeper inventory slots 9-35, never other hotbar slots.
 # ================================================================
 function smart_inventory_restock(p: player, reference: object):
+    # Folia/Paper-safe: this function only mutates the triggering player's own inventory.
     if smart_inventory_enabled({_p}) is false:
         stop
     if smart_inventory_is_empty({_reference}) is true:
@@ -208,8 +210,12 @@ command /smartinventory:
 on PlayerItemConsumeEvent:
     set {_p} to event.getPlayer()
     set {_reference} to event.getItem()
-    wait 1 tick
-    smart_inventory_restock({_p}, {_reference})
+    if {@folia-mode} is true:
+        run 1 tick later:
+            smart_inventory_restock({_p}, {_reference})
+    else:
+        wait 1 tick
+        smart_inventory_restock({_p}, {_reference})
 
 on ProjectileLaunchEvent:
     set {_projectile} to event.getEntity()
@@ -219,19 +225,31 @@ on ProjectileLaunchEvent:
     if {_shooter} is not an instance of Player:
         stop
     set {_reference} to {_projectile}.getItem()
-    wait 1 tick
-    smart_inventory_restock({_shooter}, {_reference})
+    if {@folia-mode} is true:
+        run 1 tick later:
+            smart_inventory_restock({_shooter}, {_reference})
+    else:
+        wait 1 tick
+        smart_inventory_restock({_shooter}, {_reference})
 
 on PlayerItemBreakEvent:
     set {_p} to event.getPlayer()
     set {_reference} to event.getBrokenItem()
-    wait 1 tick
-    smart_inventory_restock({_p}, {_reference})
+    if {@folia-mode} is true:
+        run 1 tick later:
+            smart_inventory_restock({_p}, {_reference})
+    else:
+        wait 1 tick
+        smart_inventory_restock({_p}, {_reference})
 
 on BlockPlaceEvent:
     if event.getHand() is not EquipmentSlot.HAND:
         stop
     set {_p} to event.getPlayer()
     set {_reference} to event.getItemInHand()
-    wait 1 tick
-    smart_inventory_restock({_p}, {_reference})
+    if {@folia-mode} is true:
+        run 1 tick later:
+            smart_inventory_restock({_p}, {_reference})
+    else:
+        wait 1 tick
+        smart_inventory_restock({_p}, {_reference})

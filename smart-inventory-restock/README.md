@@ -103,6 +103,7 @@ options:
     gui-title: &8Smart Inventory
     permission: limelink.smartinventory
     notify-restock: true
+    folia-mode: true
 ```
 
 | Option | Default | Description |
@@ -110,6 +111,7 @@ options:
 | `gui-title` | `&8Smart Inventory` | Chest GUI title. |
 | `permission` | `limelink.smartinventory` | Permission required to open the GUI. |
 | `notify-restock` | `true` | Sends an action bar message after an automatic restock. |
+| `folia-mode` | `true` | Uses delayed restock scheduling that works cleanly on Folia/Paper tick schedulers. |
 
 Reload after changes:
 
@@ -163,3 +165,10 @@ Delete `smart-inventory-restock.sk` from `plugins/Skript/scripts/` and run:
 ```mcfunction
 /skript reload all
 ```
+
+
+---
+
+## Folia Compatibility
+
+This script supports Folia by running restock logic one tick later with delayed scheduling (`run 1 tick later`) when `folia-mode` is enabled (default). This avoids same-tick inventory race conditions on both Paper and Folia.

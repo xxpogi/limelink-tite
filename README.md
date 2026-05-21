@@ -1,6 +1,6 @@
-# LimeLink Skript Library
+# LimeLink Skript Scripts Library
 
-A curated collection of production-quality [Skript](https://github.com/SkriptLang/Skript) scripts for Minecraft Paper servers — built to enhance vanilla survival gameplay with zero client-side mods required.
+A curated collection of production-quality [Skript](https://github.com/SkriptLang/Skript) scripts for Minecraft Paper/Folia servers — built to enhance vanilla survival gameplay with zero client-side mods required.
 
 ---
 
@@ -14,7 +14,7 @@ A curated collection of production-quality [Skript](https://github.com/SkriptLan
 
 ## Quick Start
 
-1. **Install [Paper](https://papermc.io/)** (1.20.1 or newer recommended).
+1. **Install [Paper](https://papermc.io/) or [Folia](https://papermc.io/software/folia)** (1.20.1 or newer recommended).
 2. **Install [Skript](https://github.com/SkriptLang/Skript/releases)** — drop `Skript.jar` into your `plugins/` folder.
 3. **Install any addons** listed in the project's Requirements table (e.g. `skript-reflect.jar`, `skript-gui.jar`).
 4. **Start or restart** your server once so Skript generates its folder structure.
@@ -34,7 +34,7 @@ Each project's own `README.md` contains full installation steps, configuration o
 ## Repository Structure
 
 ```
-limelink-tite/
+skript-scripts-library/  # (suggested repository name)
 └── <project-name>/
     ├── README.md        ← installation guide, dependencies, configuration
     └── <project>.sk     ← the Skript script file
@@ -46,7 +46,7 @@ One folder per project. Every folder is self-contained — you only copy the fil
 
 ## Compatibility
 
-All scripts target **Paper 1.20–1.21** unless noted otherwise in the project README. Spigot may work for scripts that don't use Paper-specific APIs, but is not officially tested.
+All scripts target **Paper/Folia 1.20–1.21** unless noted otherwise in the project README. Spigot may work for scripts that don't use Paper-specific APIs, but is not officially tested.
 
 ---
 
