@@ -9,6 +9,16 @@ A curated collection of production-quality [Skript](https://github.com/SkriptLan
 | Folder | Description | Addon Required |
 |--------|-------------|----------------|
 | [`smart-inventory-restock`](./smart-inventory-restock/) | Auto-restocks the active hotbar slot, adds a per-player toggle GUI, and sorts the main inventory on button click | skript-reflect, skript-gui |
+| [`survival-idea-board`](./survival-idea-board/) | Gives players random survival build/progression ideas and allows admins to add more ideas in-game | None |
+| [`sleep-vote-lite`](./sleep-vote-lite/) | Skips night when enough players are sleeping, with simple vote progress broadcasts | None |
+| [`welcome-guide-book`](./welcome-guide-book/) | Adds a `/guide` command with practical survival starter tips and first-join reminder | None |
+| [`auto-replant-lite`](./auto-replant-lite/) | Replants common crops automatically after harvesting (sneak to disable) | None |
+| [`backpack-lite`](./backpack-lite/) | Adds a simple persistent personal backpack inventory via command | None |
+| [`chunk-reminder-lite`](./chunk-reminder-lite/) | Saves current chunk coordinates and lets players check them later | None |
+| [`daily-kit-lite`](./daily-kit-lite/) | Gives a basic once-per-day survival supply kit | None |
+| [`death-coords-lite`](./death-coords-lite/) | Saves and shows the player's latest death coordinates | None |
+| [`homes-lite`](./homes-lite/) | Lightweight named home set/teleport commands | None |
+| [`treecap-lite`](./treecap-lite/) | Breaks nearby same-type logs for faster tree chopping | None |
 
 ---
 

@@ -1,0 +1,48 @@
+# ============================================================
+# Sleep Vote Lite
+# Version: 1.0.0
+# Author: LimeLink
+# ============================================================
+
+options:
+    sleep-prefix: &8[&9SleepVote&8]&r
+    sleep-percent-required: 50
+
+function sleepVotersNeeded() :: number:
+    set {_online} to amount of all players
+    if {_online} <= 1:
+        return 1
+    set {_needed} to ceil({_online} * ({@sleep-percent-required} / 100))
+    if {_needed} < 1:
+        set {_needed} to 1
+    return {_needed}
+
+on enter bed:
+    if world of player is not world("world"):
+        stop
+    wait 1 tick
+    if player is not sleeping:
+        stop
+
+    add player to {sleepvote.sleepers::*}
+
+    set {_sleeping} to size of {sleepvote.sleepers::*}
+    set {_needed} to sleepVotersNeeded()
+
+    broadcast "{@sleep-prefix} &f%player% &7is sleeping. &b%{_sleeping}%&7/&b%{_needed}% &7needed to skip night."
+
+    if {_sleeping} >= {_needed}:
+        set time in world("world") to 0
+        clear weather in world("world")
+        broadcast "{@sleep-prefix} &aVote reached. Good morning!"
+        delete {sleepvote.sleepers::*}
+
+on leave bed:
+    remove player from {sleepvote.sleepers::*}
+
+on quit:
+    remove player from {sleepvote.sleepers::*}
+
+on weather change:
+    if new weather is clear:
+        delete {sleepvote.sleepers::*}

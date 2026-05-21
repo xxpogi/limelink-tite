@@ -1,0 +1,50 @@
+# ============================================================
+# Survival Idea Board
+# Version: 1.0.0
+# Author: LimeLink
+# Server: Paper / Folia (Skript 2.7+)
+# ============================================================
+
+options:
+    idea-prefix: &8[&aIdea&8]&r
+
+on load:
+    set {idea-board::*} to "Build a small village market with custom stalls", "Create a labeled potion corner near your brewing stand", "Make a tree farm with one row per wood type", "Set up an auto-smelter room with clear chest labels", "Design a safe nether portal bunker in the overworld", "Build a dock and fishing hut with barrel storage", "Create a villager trading street by profession", "Make a crop rotation field: wheat, carrots, potatoes, beetroot", "Design a map wall room to track explored biomes", "Build a survival quest board with your own goals"
+
+command /idea [<text>]:
+    description: Show or add survival ideas for players
+    usage: /idea [add/list]
+    trigger:
+        if arg-1 is "list":
+            send "{@idea-prefix} &7Current ideas: &f%size of {idea-board::*}%"
+            loop {idea-board::*}:
+                send "&8- &f%loop-value%"
+            stop
+
+        if arg-1 is "add":
+            if player has permission "idea.admin":
+                send "{@idea-prefix} &cUse: /ideaadd <idea text>"
+            else:
+                send "{@idea-prefix} &cYou do not have permission to add ideas."
+            stop
+
+        set {_count} to size of {idea-board::*}
+        if {_count} <= 0:
+            send "{@idea-prefix} &cNo ideas are configured yet."
+            stop
+
+        set {_index} to random integer between 1 and {_count}
+        send "{@idea-prefix} &f%{idea-board::%{_index}%}%"
+
+command /ideaadd <text>:
+    permission: idea.admin
+    permission message: &cYou do not have permission.
+    trigger:
+        add arg-1 to {idea-board::*}
+        send "{@idea-prefix} &aAdded new idea: &f%arg-1%"
+
+on join:
+    set {_count} to size of {idea-board::*}
+    if {_count} > 0:
+        set {_index} to random integer between 1 and {_count}
+        send "{@idea-prefix} &7Today suggestion: &f%{idea-board::%{_index}%}%" to player
