@@ -1,0 +1,14 @@
+options:
+    q50-prefix: &8[&bQ50&8]&r
+
+command /q50sme [<text>]:
+    description: Estimates fuel needed for smelting batches. (variant #50)
+    trigger:
+        set {_p} to "{@q50-prefix}"
+        set {_items} to arg-1 parsed as integer
+        if {_items} is not set:
+            set {_items} to 64
+        send "%{_p}% &7Approx fuel: &f%ceil({_items} / 8)% coal"
+
+on death of player:
+    send "{@q50-prefix} &7Module #50 reminder: secure your spawn." to victim

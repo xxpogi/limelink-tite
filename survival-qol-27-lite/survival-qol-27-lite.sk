@@ -1,0 +1,11 @@
+options:
+    q27-prefix: &8[&bQ27&8]&r
+
+command /q27far [<text>]:
+    description: Reminds crop and animal farm maintenance steps. (variant #27)
+    trigger:
+        set {_p} to "{@q27-prefix}"
+        send "%{_p}% &7Checklist: harvest crops, breed animals, compost seeds."
+
+on join:
+    send "{@q27-prefix} &7Use /q27far for module #27." to player

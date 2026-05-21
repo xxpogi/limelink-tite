@@ -1,0 +1,14 @@
+options:
+    q06-prefix: &8[&bQ06&8]&r
+
+command /q06sme [<text>]:
+    description: Estimates fuel needed for smelting batches. (variant #06)
+    trigger:
+        set {_p} to "{@q06-prefix}"
+        set {_items} to arg-1 parsed as integer
+        if {_items} is not set:
+            set {_items} to 64
+        send "%{_p}% &7Approx fuel: &f%ceil({_items} / 8)% coal"
+
+on join:
+    send "{@q06-prefix} &7Use /q06sme for module #06." to player

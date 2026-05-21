@@ -1,0 +1,11 @@
+options:
+    q17-prefix: &8[&bQ17&8]&r
+
+command /q17sme [<text>]:
+    description: Estimates fuel needed for smelting batches. (variant #17)
+    trigger:
+        set {_p} to "{@q17-prefix}"
+        set {_items} to arg-1 parsed as integer
+        if {_items} is not set:
+            set {_items} to 64
+        send "%{_p}% &7Approx fuel: &f%ceil({_items} / 8)% coal"

@@ -1,0 +1,15 @@
+options:
+    q30-prefix: &8[&bQ30&8]&r
+
+command /q30por [<text>]:
+    description: Saves current portal coordinates. (variant #30)
+    trigger:
+        set {_p} to "{@q30-prefix}"
+        set {portal::%player's uuid%} to location of player
+        send "%{_p}% &aSaved portal point at &f%x-coordinate of player%, %y-coordinate of player%, %z-coordinate of player%"
+
+on join:
+    send "{@q30-prefix} &7Use /q30por for module #30." to player
+
+on death of player:
+    send "{@q30-prefix} &7Module #30 reminder: secure your spawn." to victim

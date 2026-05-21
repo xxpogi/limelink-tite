@@ -1,0 +1,11 @@
+options:
+    q25-prefix: &8[&bQ25&8]&r
+
+command /q25ore [<text>]:
+    description: Tracks ores mined during current session. (variant #25)
+    trigger:
+        set {_p} to "{@q25-prefix}"
+        send "%{_p}% &7Ores this session: &fCoal %{ores::%player's uuid%::coal}% &7Iron %{ores::%player's uuid%::iron}%"
+
+on death of player:
+    send "{@q25-prefix} &7Module #25 reminder: secure your spawn." to victim

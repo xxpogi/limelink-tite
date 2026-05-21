@@ -1,0 +1,11 @@
+options:
+    q12-prefix: &8[&bQ12&8]&r
+
+command /q12cam [<text>]:
+    description: Shows fuel/time tips for campfire cooking. (variant #12)
+    trigger:
+        set {_p} to "{@q12-prefix}"
+        send "%{_p}% &7Campfire tip: use hay bales under campfires for smoke signals."
+
+on join:
+    send "{@q12-prefix} &7Use /q12cam for module #12." to player

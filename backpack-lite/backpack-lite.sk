@@ -1,0 +1,18 @@
+options:
+    pack-prefix: &8[&6Backpack&8]&r
+
+command /backpack:
+    trigger:
+        if {backpack::%player's uuid%::*} is not set:
+            loop 27 times:
+                set {backpack::%player's uuid%::%loop-number%} to air
+        open chest inventory with 3 rows named "Backpack" to player
+        wait 1 tick
+        loop 27 times:
+            set slot (loop-number - 1) of player's current inventory to {backpack::%player's uuid%::%loop-number%}
+
+on inventory close:
+    if name of event-inventory is "Backpack":
+        loop 27 times:
+            set {backpack::%player's uuid%::%loop-number%} to slot (loop-number - 1) of event-inventory
+        send "{@pack-prefix} &aBackpack saved."

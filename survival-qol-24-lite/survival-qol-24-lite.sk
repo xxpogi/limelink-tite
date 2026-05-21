@@ -1,0 +1,12 @@
+options:
+    q24-prefix: &8[&bQ24&8]&r
+
+command /q24bio [<text>]:
+    description: Records current biome into personal notes. (variant #24)
+    trigger:
+        set {_p} to "{@q24-prefix}"
+        add biome at player to {journal::%player's uuid%::*}
+        send "%{_p}% &aLogged biome: &f%biome at player%"
+
+on join:
+    send "{@q24-prefix} &7Use /q24bio for module #24." to player

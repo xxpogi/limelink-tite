@@ -1,0 +1,8 @@
+options:
+    q01-prefix: &8[&bQ01&8]&r
+
+command /q01cam [<text>]:
+    description: Shows fuel/time tips for campfire cooking. (variant #01)
+    trigger:
+        set {_p} to "{@q01-prefix}"
+        send "%{_p}% &7Campfire tip: use hay bales under campfires for smoke signals."

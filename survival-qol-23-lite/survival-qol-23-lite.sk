@@ -1,0 +1,8 @@
+options:
+    q23-prefix: &8[&bQ23&8]&r
+
+command /q23cam [<text>]:
+    description: Shows fuel/time tips for campfire cooking. (variant #23)
+    trigger:
+        set {_p} to "{@q23-prefix}"
+        send "%{_p}% &7Campfire tip: use hay bales under campfires for smoke signals."

@@ -1,0 +1,11 @@
+options:
+    q05-prefix: &8[&bQ05&8]&r
+
+command /q05far [<text>]:
+    description: Reminds crop and animal farm maintenance steps. (variant #05)
+    trigger:
+        set {_p} to "{@q05-prefix}"
+        send "%{_p}% &7Checklist: harvest crops, breed animals, compost seeds."
+
+on death of player:
+    send "{@q05-prefix} &7Module #05 reminder: secure your spawn." to victim

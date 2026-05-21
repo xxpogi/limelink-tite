@@ -1,0 +1,11 @@
+options:
+    q36-prefix: &8[&bQ36&8]&r
+
+command /q36ore [<text>]:
+    description: Tracks ores mined during current session. (variant #36)
+    trigger:
+        set {_p} to "{@q36-prefix}"
+        send "%{_p}% &7Ores this session: &fCoal %{ores::%player's uuid%::coal}% &7Iron %{ores::%player's uuid%::iron}%"
+
+on join:
+    send "{@q36-prefix} &7Use /q36ore for module #36." to player

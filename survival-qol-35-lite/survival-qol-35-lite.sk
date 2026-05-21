@@ -1,0 +1,12 @@
+options:
+    q35-prefix: &8[&bQ35&8]&r
+
+command /q35bio [<text>]:
+    description: Records current biome into personal notes. (variant #35)
+    trigger:
+        set {_p} to "{@q35-prefix}"
+        add biome at player to {journal::%player's uuid%::*}
+        send "%{_p}% &aLogged biome: &f%biome at player%"
+
+on death of player:
+    send "{@q35-prefix} &7Module #35 reminder: secure your spawn." to victim

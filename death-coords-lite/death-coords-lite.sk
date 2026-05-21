@@ -1,0 +1,14 @@
+options:
+    death-prefix: &8[&cDeath&8]&r
+
+on death of player:
+    set {lastdeath::%victim's uuid%} to location of victim
+    send "{@death-prefix} &7You died at &f%x-coordinate of location of victim%, %y-coordinate of location of victim%, %z-coordinate of location of victim% &7in &f%world of victim%" to victim
+
+command /lastdeath:
+    trigger:
+        if {lastdeath::%player's uuid%} is not set:
+            send "{@death-prefix} &cNo death location saved yet."
+            stop
+        set {_loc} to {lastdeath::%player's uuid%}
+        send "{@death-prefix} &7Last death: &f%x-coordinate of {_loc}%, %y-coordinate of {_loc}%, %z-coordinate of {_loc}% &7in &f%world of {_loc}%"

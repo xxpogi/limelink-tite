@@ -1,0 +1,12 @@
+options:
+    q20-prefix: &8[&bQ20&8]&r
+
+command /q20foo [<text>]:
+    description: Configures hunger reminder threshold. (variant #20)
+    trigger:
+        set {_p} to "{@q20-prefix}"
+        set {foodalert::%player's uuid%} to 12
+        send "%{_p}% &aFood alert set to 6 hunger shanks."
+
+on death of player:
+    send "{@q20-prefix} &7Module #20 reminder: secure your spawn." to victim

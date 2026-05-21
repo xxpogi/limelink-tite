@@ -1,0 +1,8 @@
+options:
+    q22-prefix: &8[&bQ22&8]&r
+
+command /q22rai [<text>]:
+    description: Provides a quick village raid prep list. (variant #22)
+    trigger:
+        set {_p} to "{@q22-prefix}"
+        send "%{_p}% &7Bring: shield, milk bucket, bow, blocks, backup bed."

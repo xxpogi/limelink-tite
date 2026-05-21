@@ -1,0 +1,9 @@
+options:
+    q53-prefix: &8[&bQ53&8]&r
+
+command /q53foo [<text>]:
+    description: Configures hunger reminder threshold. (variant #53)
+    trigger:
+        set {_p} to "{@q53-prefix}"
+        set {foodalert::%player's uuid%} to 12
+        send "%{_p}% &aFood alert set to 6 hunger shanks."

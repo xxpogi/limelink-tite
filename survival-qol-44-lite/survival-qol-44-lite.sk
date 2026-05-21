@@ -1,0 +1,8 @@
+options:
+    q44-prefix: &8[&bQ44&8]&r
+
+command /q44rai [<text>]:
+    description: Provides a quick village raid prep list. (variant #44)
+    trigger:
+        set {_p} to "{@q44-prefix}"
+        send "%{_p}% &7Bring: shield, milk bucket, bow, blocks, backup bed."

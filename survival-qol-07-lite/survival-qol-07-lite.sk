@@ -1,0 +1,9 @@
+options:
+    q07-prefix: &8[&bQ07&8]&r
+
+command /q07vil [<text>]:
+    description: Stores quick notes for villager hall plans. (variant #07)
+    trigger:
+        set {_p} to "{@q07-prefix}"
+        set {villagernote::%player's uuid%} to "Librarian -> Toolsmith -> Armorer"
+        send "%{_p}% &aSaved default villager route plan."

@@ -1,0 +1,21 @@
+options:
+    home-prefix: &8[&bHomes&8]&r
+
+command /sethome [<text>]:
+    trigger:
+        set {_name} to arg-1
+        if {_name} is not set:
+            set {_name} to "home"
+        set {homes::%player's uuid%::%{_name}%} to location of player
+        send "{@home-prefix} &aSet home &f%{_name}%"
+
+command /home [<text>]:
+    trigger:
+        set {_name} to arg-1
+        if {_name} is not set:
+            set {_name} to "home"
+        if {homes::%player's uuid%::%{_name}%} is not set:
+            send "{@home-prefix} &cHome not found: &f%{_name}%"
+            stop
+        teleport player to {homes::%player's uuid%::%{_name}%}
+        send "{@home-prefix} &aTeleported to &f%{_name}%"

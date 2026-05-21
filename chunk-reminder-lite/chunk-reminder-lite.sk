@@ -1,0 +1,16 @@
+options:
+    chunk-prefix: &8[&dChunk&8]&r
+
+command /chunkmark:
+    trigger:
+        set {chunkmark::%player's uuid%::world} to name of world of player
+        set {chunkmark::%player's uuid%::x} to chunk x-coordinate of player
+        set {chunkmark::%player's uuid%::z} to chunk z-coordinate of player
+        send "{@chunk-prefix} &aSaved chunk in &f%{chunkmark::%player's uuid%::world}% &aat &f%{chunkmark::%player's uuid%::x}%, %{chunkmark::%player's uuid%::z}%"
+
+command /chunkback:
+    trigger:
+        if {chunkmark::%player's uuid%::world} is not set:
+            send "{@chunk-prefix} &cNo chunk saved. Use /chunkmark first."
+            stop
+        send "{@chunk-prefix} &7Your saved chunk is &f%{chunkmark::%player's uuid%::x}%, %{chunkmark::%player's uuid%::z}% &7in &f%{chunkmark::%player's uuid%::world}%"

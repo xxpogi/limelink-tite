@@ -1,0 +1,8 @@
+options:
+    q16-prefix: &8[&bQ16&8]&r
+
+command /q16far [<text>]:
+    description: Reminds crop and animal farm maintenance steps. (variant #16)
+    trigger:
+        set {_p} to "{@q16-prefix}"
+        send "%{_p}% &7Checklist: harvest crops, breed animals, compost seeds."

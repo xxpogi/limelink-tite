@@ -1,0 +1,8 @@
+options:
+    q43-prefix: &8[&bQ43&8]&r
+
+command /q43rai [<text>]:
+    description: Shows rainy-day survival tasks. (variant #43)
+    trigger:
+        set {_p} to "{@q43-prefix}"
+        send "%{_p}% &7Rain plan: fish, sort storage, expand villager hall."

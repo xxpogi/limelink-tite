@@ -1,0 +1,8 @@
+options:
+    q32-prefix: &8[&bQ32&8]&r
+
+command /q32rai [<text>]:
+    description: Shows rainy-day survival tasks. (variant #32)
+    trigger:
+        set {_p} to "{@q32-prefix}"
+        send "%{_p}% &7Rain plan: fish, sort storage, expand villager hall."

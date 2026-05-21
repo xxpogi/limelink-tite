@@ -1,0 +1,8 @@
+options:
+    q11-prefix: &8[&bQ11&8]&r
+
+command /q11rai [<text>]:
+    description: Provides a quick village raid prep list. (variant #11)
+    trigger:
+        set {_p} to "{@q11-prefix}"
+        send "%{_p}% &7Bring: shield, milk bucket, bow, blocks, backup bed."

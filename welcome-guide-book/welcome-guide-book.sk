@@ -1,0 +1,25 @@
+# ============================================================
+# Welcome Guide Book
+# Version: 1.0.0
+# Author: LimeLink
+# ============================================================
+
+options:
+    guide-prefix: &8[&6Guide&8]&r
+
+command /guide:
+    description: Opens a survival helper guide
+    trigger:
+        send "{@guide-prefix} &eSurvival Quick Guide"
+        send "&8&m--------------------------------"
+        send "&f1) Build a shelter before your first night."
+        send "&f2) Keep 2 stacks of food before mining runs."
+        send "&f3) Place torches every 8-10 blocks to reduce mob spawns."
+        send "&f4) Upgrade to iron tools before deep cave runs."
+        send "&f5) Set short goals: farm, enchant room, villager hall."
+        send "&f6) Use /idea for random base/project inspiration."
+        send "&8&m--------------------------------"
+
+on first join:
+    wait 20 ticks
+    send "{@guide-prefix} &aWelcome! Run &f/guide &afor survival tips and &f/idea &afor build ideas." to player

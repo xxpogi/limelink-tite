@@ -1,0 +1,14 @@
+options:
+    q45-prefix: &8[&bQ45&8]&r
+
+command /q45cam [<text>]:
+    description: Shows fuel/time tips for campfire cooking. (variant #45)
+    trigger:
+        set {_p} to "{@q45-prefix}"
+        send "%{_p}% &7Campfire tip: use hay bales under campfires for smoke signals."
+
+on join:
+    send "{@q45-prefix} &7Use /q45cam for module #45." to player
+
+on death of player:
+    send "{@q45-prefix} &7Module #45 reminder: secure your spawn." to victim

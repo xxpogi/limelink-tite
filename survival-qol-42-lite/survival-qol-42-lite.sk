@@ -1,0 +1,12 @@
+options:
+    q42-prefix: &8[&bQ42&8]&r
+
+command /q42foo [<text>]:
+    description: Configures hunger reminder threshold. (variant #42)
+    trigger:
+        set {_p} to "{@q42-prefix}"
+        set {foodalert::%player's uuid%} to 12
+        send "%{_p}% &aFood alert set to 6 hunger shanks."
+
+on join:
+    send "{@q42-prefix} &7Use /q42foo for module #42." to player

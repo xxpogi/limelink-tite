@@ -1,0 +1,11 @@
+options:
+    q33-prefix: &8[&bQ33&8]&r
+
+command /q33rai [<text>]:
+    description: Provides a quick village raid prep list. (variant #33)
+    trigger:
+        set {_p} to "{@q33-prefix}"
+        send "%{_p}% &7Bring: shield, milk bucket, bow, blocks, backup bed."
+
+on join:
+    send "{@q33-prefix} &7Use /q33rai for module #33." to player
