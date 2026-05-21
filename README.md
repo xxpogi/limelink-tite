@@ -1,4 +1,4 @@
-# LimeLink Skript Scripts Library
+# Skript Scripts Library
 
 A curated collection of production-quality [Skript](https://github.com/SkriptLang/Skript) scripts for Minecraft Paper/Folia servers — built to enhance vanilla survival gameplay with zero client-side mods required.
 
