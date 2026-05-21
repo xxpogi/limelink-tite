@@ -1,0 +1,11 @@
+options:
+    treecap-prefix: &8[&2Treecap&8]&r
+
+on break of oak log or birch log or spruce log or jungle log or acacia log or dark oak log or mangrove log or cherry log:
+    if player is sneaking:
+        stop
+    set {_tool} to player's tool
+    loop blocks in radius 4 around event-block:
+        if loop-block is type of event-block:
+            break loop-block naturally
+    damage {_tool} by 1

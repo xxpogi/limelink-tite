@@ -1,0 +1,20 @@
+options:
+    replant-prefix: &8[&aReplant&8]&r
+
+on break of wheat or carrots or potatoes or beetroot or nether wart:
+    if player is sneaking:
+        stop
+    if event-block is not crop and event-block is not nether wart:
+        stop
+    wait 1 tick
+    if block at event-location is air:
+        if event-block is wheat:
+            set block at event-location to wheat[age=0]
+        else if event-block is carrots:
+            set block at event-location to carrots[age=0]
+        else if event-block is potatoes:
+            set block at event-location to potatoes[age=0]
+        else if event-block is beetroot:
+            set block at event-location to beetroot[age=0]
+        else if event-block is nether wart:
+            set block at event-location to nether wart[age=0]

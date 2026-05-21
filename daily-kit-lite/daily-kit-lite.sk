@@ -1,0 +1,15 @@
+options:
+    kit-prefix: &8[&eDailyKit&8]&r
+
+command /dailykit:
+    trigger:
+        set {_now} to now
+        if {dailykit::%player's uuid%} is set:
+            if difference between {_now} and {dailykit::%player's uuid%} < 24 hours:
+                send "{@kit-prefix} &cCome back later for your next kit."
+                stop
+        give 16 cooked beef to player
+        give 32 torch to player
+        give 1 iron pickaxe to player
+        set {dailykit::%player's uuid%} to {_now}
+        send "{@kit-prefix} &aYou claimed your daily kit."
