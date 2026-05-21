@@ -1,0 +1,11 @@
+options:
+    q21-prefix: &8[&bQ21&8]&r
+
+command /q21rai [<text>]:
+    description: Shows rainy-day survival tasks. (variant #21)
+    trigger:
+        set {_p} to "{@q21-prefix}"
+        send "%{_p}% &7Rain plan: fish, sort storage, expand villager hall."
+
+on join:
+    send "{@q21-prefix} &7Use /q21rai for module #21." to player

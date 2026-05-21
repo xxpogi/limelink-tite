@@ -1,0 +1,17 @@
+options:
+    q15-prefix: &8[&bQ15&8]&r
+
+command /q15tor [<text>]:
+    description: Estimates torch count for cave run. (variant #15)
+    trigger:
+        set {_p} to "{@q15-prefix}"
+        set {_stacks} to arg-1 parsed as integer
+        if {_stacks} is not set:
+            set {_stacks} to 1
+        send "%{_p}% &7Bring about &f%({_stacks} * 32)% &7torches for a medium run."
+
+on join:
+    send "{@q15-prefix} &7Use /q15tor for module #15." to player
+
+on death of player:
+    send "{@q15-prefix} &7Module #15 reminder: secure your spawn." to victim

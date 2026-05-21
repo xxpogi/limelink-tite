@@ -1,0 +1,12 @@
+options:
+    q40-prefix: &8[&bQ40&8]&r
+
+command /q40vil [<text>]:
+    description: Stores quick notes for villager hall plans. (variant #40)
+    trigger:
+        set {_p} to "{@q40-prefix}"
+        set {villagernote::%player's uuid%} to "Librarian -> Toolsmith -> Armorer"
+        send "%{_p}% &aSaved default villager route plan."
+
+on death of player:
+    send "{@q40-prefix} &7Module #40 reminder: secure your spawn." to victim

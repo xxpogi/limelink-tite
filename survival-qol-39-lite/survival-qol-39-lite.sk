@@ -1,0 +1,14 @@
+options:
+    q39-prefix: &8[&bQ39&8]&r
+
+command /q39sme [<text>]:
+    description: Estimates fuel needed for smelting batches. (variant #39)
+    trigger:
+        set {_p} to "{@q39-prefix}"
+        set {_items} to arg-1 parsed as integer
+        if {_items} is not set:
+            set {_items} to 64
+        send "%{_p}% &7Approx fuel: &f%ceil({_items} / 8)% coal"
+
+on join:
+    send "{@q39-prefix} &7Use /q39sme for module #39." to player

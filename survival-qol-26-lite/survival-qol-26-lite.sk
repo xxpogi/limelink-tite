@@ -1,0 +1,11 @@
+options:
+    q26-prefix: &8[&bQ26&8]&r
+
+command /q26tor [<text>]:
+    description: Estimates torch count for cave run. (variant #26)
+    trigger:
+        set {_p} to "{@q26-prefix}"
+        set {_stacks} to arg-1 parsed as integer
+        if {_stacks} is not set:
+            set {_stacks} to 1
+        send "%{_p}% &7Bring about &f%({_stacks} * 32)% &7torches for a medium run."

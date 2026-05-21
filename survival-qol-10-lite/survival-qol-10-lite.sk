@@ -1,0 +1,11 @@
+options:
+    q10-prefix: &8[&bQ10&8]&r
+
+command /q10rai [<text>]:
+    description: Shows rainy-day survival tasks. (variant #10)
+    trigger:
+        set {_p} to "{@q10-prefix}"
+        send "%{_p}% &7Rain plan: fish, sort storage, expand villager hall."
+
+on death of player:
+    send "{@q10-prefix} &7Module #10 reminder: secure your spawn." to victim

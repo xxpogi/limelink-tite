@@ -1,0 +1,12 @@
+options:
+    q18-prefix: &8[&bQ18&8]&r
+
+command /q18vil [<text>]:
+    description: Stores quick notes for villager hall plans. (variant #18)
+    trigger:
+        set {_p} to "{@q18-prefix}"
+        set {villagernote::%player's uuid%} to "Librarian -> Toolsmith -> Armorer"
+        send "%{_p}% &aSaved default villager route plan."
+
+on join:
+    send "{@q18-prefix} &7Use /q18vil for module #18." to player

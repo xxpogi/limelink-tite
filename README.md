@@ -1,4 +1,4 @@
-# Skript Scripts Library
+# LimeLink Skript Scripts Library
 
 A curated collection of production-quality [Skript](https://github.com/SkriptLang/Skript) scripts for Minecraft Paper/Folia servers — built to enhance vanilla survival gameplay with zero client-side mods required.
 
@@ -19,6 +19,61 @@ A curated collection of production-quality [Skript](https://github.com/SkriptLan
 | [`death-coords-lite`](./death-coords-lite/) | Saves and shows the player's latest death coordinates | None |
 | [`homes-lite`](./homes-lite/) | Lightweight named home set/teleport commands | None |
 | [`treecap-lite`](./treecap-lite/) | Breaks nearby same-type logs for faster tree chopping | None |
+| [`survival-qol-01-lite`](./survival-qol-01-lite/) | Unique survival helper variant #01 with dedicated command and behavior | None |
+| [`survival-qol-02-lite`](./survival-qol-02-lite/) | Unique survival helper variant #02 with dedicated command and behavior | None |
+| [`survival-qol-03-lite`](./survival-qol-03-lite/) | Unique survival helper variant #03 with dedicated command and behavior | None |
+| [`survival-qol-04-lite`](./survival-qol-04-lite/) | Unique survival helper variant #04 with dedicated command and behavior | None |
+| [`survival-qol-05-lite`](./survival-qol-05-lite/) | Unique survival helper variant #05 with dedicated command and behavior | None |
+| [`survival-qol-06-lite`](./survival-qol-06-lite/) | Unique survival helper variant #06 with dedicated command and behavior | None |
+| [`survival-qol-07-lite`](./survival-qol-07-lite/) | Unique survival helper variant #07 with dedicated command and behavior | None |
+| [`survival-qol-08-lite`](./survival-qol-08-lite/) | Unique survival helper variant #08 with dedicated command and behavior | None |
+| [`survival-qol-09-lite`](./survival-qol-09-lite/) | Unique survival helper variant #09 with dedicated command and behavior | None |
+| [`survival-qol-10-lite`](./survival-qol-10-lite/) | Unique survival helper variant #10 with dedicated command and behavior | None |
+| [`survival-qol-11-lite`](./survival-qol-11-lite/) | Unique survival helper variant #11 with dedicated command and behavior | None |
+| [`survival-qol-12-lite`](./survival-qol-12-lite/) | Unique survival helper variant #12 with dedicated command and behavior | None |
+| [`survival-qol-13-lite`](./survival-qol-13-lite/) | Unique survival helper variant #13 with dedicated command and behavior | None |
+| [`survival-qol-14-lite`](./survival-qol-14-lite/) | Unique survival helper variant #14 with dedicated command and behavior | None |
+| [`survival-qol-15-lite`](./survival-qol-15-lite/) | Unique survival helper variant #15 with dedicated command and behavior | None |
+| [`survival-qol-16-lite`](./survival-qol-16-lite/) | Unique survival helper variant #16 with dedicated command and behavior | None |
+| [`survival-qol-17-lite`](./survival-qol-17-lite/) | Unique survival helper variant #17 with dedicated command and behavior | None |
+| [`survival-qol-18-lite`](./survival-qol-18-lite/) | Unique survival helper variant #18 with dedicated command and behavior | None |
+| [`survival-qol-19-lite`](./survival-qol-19-lite/) | Unique survival helper variant #19 with dedicated command and behavior | None |
+| [`survival-qol-20-lite`](./survival-qol-20-lite/) | Unique survival helper variant #20 with dedicated command and behavior | None |
+| [`survival-qol-21-lite`](./survival-qol-21-lite/) | Unique survival helper variant #21 with dedicated command and behavior | None |
+| [`survival-qol-22-lite`](./survival-qol-22-lite/) | Unique survival helper variant #22 with dedicated command and behavior | None |
+| [`survival-qol-23-lite`](./survival-qol-23-lite/) | Unique survival helper variant #23 with dedicated command and behavior | None |
+| [`survival-qol-24-lite`](./survival-qol-24-lite/) | Unique survival helper variant #24 with dedicated command and behavior | None |
+| [`survival-qol-25-lite`](./survival-qol-25-lite/) | Unique survival helper variant #25 with dedicated command and behavior | None |
+| [`survival-qol-26-lite`](./survival-qol-26-lite/) | Unique survival helper variant #26 with dedicated command and behavior | None |
+| [`survival-qol-27-lite`](./survival-qol-27-lite/) | Unique survival helper variant #27 with dedicated command and behavior | None |
+| [`survival-qol-28-lite`](./survival-qol-28-lite/) | Unique survival helper variant #28 with dedicated command and behavior | None |
+| [`survival-qol-29-lite`](./survival-qol-29-lite/) | Unique survival helper variant #29 with dedicated command and behavior | None |
+| [`survival-qol-30-lite`](./survival-qol-30-lite/) | Unique survival helper variant #30 with dedicated command and behavior | None |
+| [`survival-qol-31-lite`](./survival-qol-31-lite/) | Unique survival helper variant #31 with dedicated command and behavior | None |
+| [`survival-qol-32-lite`](./survival-qol-32-lite/) | Unique survival helper variant #32 with dedicated command and behavior | None |
+| [`survival-qol-33-lite`](./survival-qol-33-lite/) | Unique survival helper variant #33 with dedicated command and behavior | None |
+| [`survival-qol-34-lite`](./survival-qol-34-lite/) | Unique survival helper variant #34 with dedicated command and behavior | None |
+| [`survival-qol-35-lite`](./survival-qol-35-lite/) | Unique survival helper variant #35 with dedicated command and behavior | None |
+| [`survival-qol-36-lite`](./survival-qol-36-lite/) | Unique survival helper variant #36 with dedicated command and behavior | None |
+| [`survival-qol-37-lite`](./survival-qol-37-lite/) | Unique survival helper variant #37 with dedicated command and behavior | None |
+| [`survival-qol-38-lite`](./survival-qol-38-lite/) | Unique survival helper variant #38 with dedicated command and behavior | None |
+| [`survival-qol-39-lite`](./survival-qol-39-lite/) | Unique survival helper variant #39 with dedicated command and behavior | None |
+| [`survival-qol-40-lite`](./survival-qol-40-lite/) | Unique survival helper variant #40 with dedicated command and behavior | None |
+| [`survival-qol-41-lite`](./survival-qol-41-lite/) | Unique survival helper variant #41 with dedicated command and behavior | None |
+| [`survival-qol-42-lite`](./survival-qol-42-lite/) | Unique survival helper variant #42 with dedicated command and behavior | None |
+| [`survival-qol-43-lite`](./survival-qol-43-lite/) | Unique survival helper variant #43 with dedicated command and behavior | None |
+| [`survival-qol-44-lite`](./survival-qol-44-lite/) | Unique survival helper variant #44 with dedicated command and behavior | None |
+| [`survival-qol-45-lite`](./survival-qol-45-lite/) | Unique survival helper variant #45 with dedicated command and behavior | None |
+| [`survival-qol-46-lite`](./survival-qol-46-lite/) | Unique survival helper variant #46 with dedicated command and behavior | None |
+| [`survival-qol-47-lite`](./survival-qol-47-lite/) | Unique survival helper variant #47 with dedicated command and behavior | None |
+| [`survival-qol-48-lite`](./survival-qol-48-lite/) | Unique survival helper variant #48 with dedicated command and behavior | None |
+| [`survival-qol-49-lite`](./survival-qol-49-lite/) | Unique survival helper variant #49 with dedicated command and behavior | None |
+| [`survival-qol-50-lite`](./survival-qol-50-lite/) | Unique survival helper variant #50 with dedicated command and behavior | None |
+| [`survival-qol-51-lite`](./survival-qol-51-lite/) | Unique survival helper variant #51 with dedicated command and behavior | None |
+| [`survival-qol-52-lite`](./survival-qol-52-lite/) | Unique survival helper variant #52 with dedicated command and behavior | None |
+| [`survival-qol-53-lite`](./survival-qol-53-lite/) | Unique survival helper variant #53 with dedicated command and behavior | None |
+| [`survival-qol-54-lite`](./survival-qol-54-lite/) | Unique survival helper variant #54 with dedicated command and behavior | None |
+| [`survival-qol-55-lite`](./survival-qol-55-lite/) | Unique survival helper variant #55 with dedicated command and behavior | None |
 
 ---
 

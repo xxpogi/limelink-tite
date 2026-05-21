@@ -1,0 +1,8 @@
+options:
+    q38-prefix: &8[&bQ38&8]&r
+
+command /q38far [<text>]:
+    description: Reminds crop and animal farm maintenance steps. (variant #38)
+    trigger:
+        set {_p} to "{@q38-prefix}"
+        send "%{_p}% &7Checklist: harvest crops, breed animals, compost seeds."

@@ -1,0 +1,12 @@
+options:
+    q09-prefix: &8[&bQ09&8]&r
+
+command /q09foo [<text>]:
+    description: Configures hunger reminder threshold. (variant #09)
+    trigger:
+        set {_p} to "{@q09-prefix}"
+        set {foodalert::%player's uuid%} to 12
+        send "%{_p}% &aFood alert set to 6 hunger shanks."
+
+on join:
+    send "{@q09-prefix} &7Use /q09foo for module #09." to player

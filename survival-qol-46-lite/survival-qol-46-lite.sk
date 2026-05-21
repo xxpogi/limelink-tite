@@ -1,0 +1,9 @@
+options:
+    q46-prefix: &8[&bQ46&8]&r
+
+command /q46bio [<text>]:
+    description: Records current biome into personal notes. (variant #46)
+    trigger:
+        set {_p} to "{@q46-prefix}"
+        add biome at player to {journal::%player's uuid%::*}
+        send "%{_p}% &aLogged biome: &f%biome at player%"

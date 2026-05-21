@@ -1,0 +1,8 @@
+options:
+    q34-prefix: &8[&bQ34&8]&r
+
+command /q34cam [<text>]:
+    description: Shows fuel/time tips for campfire cooking. (variant #34)
+    trigger:
+        set {_p} to "{@q34-prefix}"
+        send "%{_p}% &7Campfire tip: use hay bales under campfires for smoke signals."

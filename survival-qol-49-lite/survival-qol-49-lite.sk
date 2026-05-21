@@ -1,0 +1,8 @@
+options:
+    q49-prefix: &8[&bQ49&8]&r
+
+command /q49far [<text>]:
+    description: Reminds crop and animal farm maintenance steps. (variant #49)
+    trigger:
+        set {_p} to "{@q49-prefix}"
+        send "%{_p}% &7Checklist: harvest crops, breed animals, compost seeds."

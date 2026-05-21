@@ -1,0 +1,9 @@
+options:
+    q13-prefix: &8[&bQ13&8]&r
+
+command /q13bio [<text>]:
+    description: Records current biome into personal notes. (variant #13)
+    trigger:
+        set {_p} to "{@q13-prefix}"
+        add biome at player to {journal::%player's uuid%::*}
+        send "%{_p}% &aLogged biome: &f%biome at player%"

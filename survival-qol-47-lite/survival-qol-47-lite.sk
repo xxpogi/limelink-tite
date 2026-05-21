@@ -1,0 +1,8 @@
+options:
+    q47-prefix: &8[&bQ47&8]&r
+
+command /q47ore [<text>]:
+    description: Tracks ores mined during current session. (variant #47)
+    trigger:
+        set {_p} to "{@q47-prefix}"
+        send "%{_p}% &7Ores this session: &fCoal %{ores::%player's uuid%::coal}% &7Iron %{ores::%player's uuid%::iron}%"

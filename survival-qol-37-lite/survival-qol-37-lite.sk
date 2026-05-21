@@ -1,0 +1,11 @@
+options:
+    q37-prefix: &8[&bQ37&8]&r
+
+command /q37tor [<text>]:
+    description: Estimates torch count for cave run. (variant #37)
+    trigger:
+        set {_p} to "{@q37-prefix}"
+        set {_stacks} to arg-1 parsed as integer
+        if {_stacks} is not set:
+            set {_stacks} to 1
+        send "%{_p}% &7Bring about &f%({_stacks} * 32)% &7torches for a medium run."

@@ -1,0 +1,11 @@
+options:
+    q54-prefix: &8[&bQ54&8]&r
+
+command /q54rai [<text>]:
+    description: Shows rainy-day survival tasks. (variant #54)
+    trigger:
+        set {_p} to "{@q54-prefix}"
+        send "%{_p}% &7Rain plan: fish, sort storage, expand villager hall."
+
+on join:
+    send "{@q54-prefix} &7Use /q54rai for module #54." to player

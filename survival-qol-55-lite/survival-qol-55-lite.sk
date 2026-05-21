@@ -1,0 +1,11 @@
+options:
+    q55-prefix: &8[&bQ55&8]&r
+
+command /q55rai [<text>]:
+    description: Provides a quick village raid prep list. (variant #55)
+    trigger:
+        set {_p} to "{@q55-prefix}"
+        send "%{_p}% &7Bring: shield, milk bucket, bow, blocks, backup bed."
+
+on death of player:
+    send "{@q55-prefix} &7Module #55 reminder: secure your spawn." to victim

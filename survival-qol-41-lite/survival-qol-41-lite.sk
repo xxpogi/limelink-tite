@@ -1,0 +1,9 @@
+options:
+    q41-prefix: &8[&bQ41&8]&r
+
+command /q41por [<text>]:
+    description: Saves current portal coordinates. (variant #41)
+    trigger:
+        set {_p} to "{@q41-prefix}"
+        set {portal::%player's uuid%} to location of player
+        send "%{_p}% &aSaved portal point at &f%x-coordinate of player%, %y-coordinate of player%, %z-coordinate of player%"

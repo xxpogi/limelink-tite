@@ -1,0 +1,9 @@
+options:
+    q31-prefix: &8[&bQ31&8]&r
+
+command /q31foo [<text>]:
+    description: Configures hunger reminder threshold. (variant #31)
+    trigger:
+        set {_p} to "{@q31-prefix}"
+        set {foodalert::%player's uuid%} to 12
+        send "%{_p}% &aFood alert set to 6 hunger shanks."

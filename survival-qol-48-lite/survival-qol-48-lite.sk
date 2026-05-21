@@ -1,0 +1,14 @@
+options:
+    q48-prefix: &8[&bQ48&8]&r
+
+command /q48tor [<text>]:
+    description: Estimates torch count for cave run. (variant #48)
+    trigger:
+        set {_p} to "{@q48-prefix}"
+        set {_stacks} to arg-1 parsed as integer
+        if {_stacks} is not set:
+            set {_stacks} to 1
+        send "%{_p}% &7Bring about &f%({_stacks} * 32)% &7torches for a medium run."
+
+on join:
+    send "{@q48-prefix} &7Use /q48tor for module #48." to player
